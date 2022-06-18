@@ -19,15 +19,19 @@
             <table class="table">
                 <thead>
                     <tr>
+                        <th>ID Obat</th>
                         <th>Nama Obat</th>
                         <th>Jumlah terjual</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>lorem</td>
-                        <td>lorem</td>
-                    </tr>
+                    @foreach ($obat_terlaris as $ot)
+                        <tr>
+                            <td>{{$ot->id}}</td>
+                            <td>{{$ot->generic_name}}</td>
+                            <td>{{$arr_terlaris[$ot->id]}}</td>
+                        </tr>
+                    @endforeach
                 </tbody>
             </table>
         </div>

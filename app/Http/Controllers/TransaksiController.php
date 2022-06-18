@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Obat;
+use App\Transaksi;
 
 class TransaksiController extends Controller
 {
@@ -98,22 +100,30 @@ class TransaksiController extends Controller
     }
 
     public function laporanObatTerlaris(){
-        //dari transaksi_obats,  group by obat_id
-        //Select o.id, o.generic_name, sum(tr.jumlah)
-        //From obats o
-        //inner join transaksi_obats tr ON o.id = tr.obat_id
-        //where sum(tr.jumlah) = Select MAX(sum(jumlah)) from transaksi_obats group by obat_id
+        // $obatTerlaris = DB::table('transaksi_obats as tr')
+        //         ->select('o.id', 'o.generic_name', DB::Raw('SUM(tr.jumlah) as jumlah'))
+        //         ->join('obats as o','o.id', '=', 'tr.obat_id')
+        //         ->groupBy('o.id', 'o.generic_name')
+        //         ->orderBy(DB::raw('SUM(jumlah)'), 'desc')
+        //         ->limit(5)
+        //         ->get();
 
-        // Belum dicoba
-        $terlaris = DB::table('transaksi_obats')->max("DB::Raw(sum('jumlah'))")->groupBy('obat_id');
+        $obat = Obat::all();
+        $transaksi = Transaksi::all();
 
-        $obat = DB::table('transaksi_obats')
-                ->select('o.id', 'o.generic_name', DB::Raw('sum(tr.jumlah)'))
-                ->join('transaksi_obats tr','o.id', '=', 'tr.obat_id')
-                ->where("DB::Raw('sum(tr.jumlah)')", $terlaris)
-                ->get();
+        $arr_terlaris = [];
 
-        dd($obat);
-        // return view('laporan.obatTerlaris', compact('obat'));
+        foreach($obat as $o) $arr_terlaris[$o->id] = $o->transaksi()->sum('jumlah');
+
+        arsort($arr_terlaris);
+        $terlaris = array_slice(array_keys($arr_terlaris), 0,5, true);
+
+        $obat_terlaris = [];
+        foreach($terlaris as $idx => $val){
+            $obat = Obat::find($val);
+            array_push($obat_terlaris, $obat);
+        }
+        // dd($obat_terlaris);
+        return view('laporan.obatTerlaris', compact('obat_terlaris', 'arr_terlaris'));
     }
 }
